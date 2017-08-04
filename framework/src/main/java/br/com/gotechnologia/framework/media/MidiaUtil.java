@@ -15,6 +15,7 @@ import android.util.Log;
 
 import java.io.File;
 
+import br.com.gotechnologia.framework.listener.DownloadReferenceListener;
 import br.com.gotechnologia.framework.listener.ShowFileClickListener;
 
 import static android.content.Context.DOWNLOAD_SERVICE;
@@ -26,33 +27,28 @@ import static android.content.Context.DOWNLOAD_SERVICE;
 public class MidiaUtil {
 
 
-
-
     public static File getAppDirectory(String dir) {
         return Environment.getExternalStoragePublicDirectory(dir);
     }
+
+
 
 
     /**
      * ?Baixar Arquivo pelo download manager
      */
 
-
-
-
-    public static long downloadArquivo(Context context, String title, String arquivoName,String url, BroadcastReceiver receiver) {
+    public static long downloadArquivo(Context context, String title, String arquivoName, Uri url, DownloadReferenceListener receiver) {
 
         IntentFilter filter = new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE);
-        context.registerReceiver(receiver, filter);
 
+        context.registerReceiver(getReceiver(receiver), filter);
 
         long downloadReference = 0;
 
         DownloadManager downloadManager = (DownloadManager) context.getSystemService(DOWNLOAD_SERVICE);
 
-        Uri uri = Uri.parse(url);
-
-        DownloadManager.Request request = new DownloadManager.Request(uri);
+        DownloadManager.Request request = new DownloadManager.Request(url);
 
 
         request.setTitle(title);
@@ -67,9 +63,16 @@ public class MidiaUtil {
         downloadReference = downloadManager.enqueue(request);
 
         return downloadReference;
-
     }
 
+    /**
+     * ?Baixar Arquivo pelo download manager
+     */
+
+    public static long downloadArquivo(Context context, String title, String arquivoName, String url, DownloadReferenceListener receiver) {
+
+        return downloadArquivo(context,title,arquivoName,Uri.parse(url),receiver);
+    }
 
 
     public static void showFileAction(Context context, Uri file) {
@@ -83,14 +86,25 @@ public class MidiaUtil {
     }
 
     public static void showFileAction(Context context, File file) {
-        showFileAction(context, FileProvider.getUriForFile(context.getApplicationContext(),context.getApplicationContext().getPackageName() + ".provider",file));
+        showFileAction(context, FileProvider.getUriForFile(context.getApplicationContext(), context.getApplicationContext().getPackageName() + ".provider", file));
     }
 
     public static void showFileAction(Context context, String file) {
-        Log.i("MidiaUtil", "showFileAction: "+file);
+        Log.i("MidiaUtil", "showFileAction: " + file);
         showFileAction(context, new File(Uri.parse(file).getPath()));
     }
 
+    private static BroadcastReceiver getReceiver(final DownloadReferenceListener listener) {
+        return new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+
+                //check if the broadcast message is for our enqueued download
+                long referenceId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
+                listener.onDownloadAction(referenceId);
+            }
+        };
+    }
 
     public static void handleFileDownloaded(Long downloadReference, Snackbar bar) {
         if (bar == null)
