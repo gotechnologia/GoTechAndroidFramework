@@ -205,7 +205,7 @@ public class MidiaUtil {
     }
 
 
-    public String getSelectedData(Uri data,Context context) {
+    public static  String getSelectedData(Uri data,Context context) {
 
         String path = null;
         String[] projection = {MediaStore.Files.FileColumns.DATA};
@@ -225,7 +225,7 @@ public class MidiaUtil {
         return ((path == null || path.isEmpty()) ? (data.getPath()) : path);
     }
 
-    public String getDataString(Uri uri,Context context) {
+    public static String getDataString(Uri uri,Context context) {
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT && DocumentsContract.isDocumentUri(context, uri)) {
             if (isExternalStorageDocument(uri)) {
@@ -278,12 +278,12 @@ public class MidiaUtil {
         return null;
     }
 
-    public boolean isMediaDocument(Uri uri) {
+    public static  boolean isMediaDocument(Uri uri) {
         return "com.android.providers.media.documents".equals(uri
                 .getAuthority());
     }
 
-    public String getDataColumn(Context context, Uri uri,
+    public static  String getDataColumn(Context context, Uri uri,
                                 String selection, String[] selectionArgs) {
 
         Cursor cursor = null;
